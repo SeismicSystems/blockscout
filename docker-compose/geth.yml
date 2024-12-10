@@ -87,3 +87,35 @@ services:
     extends:
       file: ./services/nginx.yml
       service: proxy
+
+  validator02_evm:
+    labels:
+      e2e: true
+    container_name: geth
+    image: "ethereum/client-go:v1.14.11"
+    restart: unless-stopped
+    command:
+      - --config=/geth/config.toml
+      # Flags not available via config.toml
+      - --nat=extip:10.186.73.101
+      - --pprof
+      - --pprof.addr=0.0.0.0
+      - --metrics
+      - --graphql
+      - --verbosity=4 # Log level (1=error,2=warn,3=info,4=debug)
+      
+    ports:
+      - 8551 # Auth RPC
+      - 8545:8545 # HTTP RPC
+      - 30303 # Execution P2P
+      - 30303/udp # Execution P2P Discovery
+      - 8546 # Websockets RPC
+      - 6060 # Prometheus metrics and pprof
+    healthcheck:
+      test: "nc -z localhost 8545"
+      interval: 1s
+      retries: 30
+    volumes:
+      - ./validator02_evm:/geth
+    logging:
+      driver: local
