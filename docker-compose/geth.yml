@@ -29,9 +29,10 @@ services:
     links:
       - db:database
     environment:
-        ETHEREUM_JSONRPC_VARIANT: 'geth'
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+      ETHEREUM_JSONRPC_VARIANT: "geth"
+      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: "true"
+      INDEXER_DISABLE_INTERNAL_TRANSACTIONS_FETCHER: "true"
+
 
   visualizer:
     extends:
@@ -80,8 +81,6 @@ services:
     extends:
       file: ./services/user-ops-indexer.yml
       service: user-ops-indexer
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   proxy:
     depends_on:
@@ -92,8 +91,25 @@ services:
       file: ./services/nginx.yml
       service: proxy
 
-  # seismic-reth:
-  #   image: seismic-reth
+  seismic-reth:
+    image: seismic-reth
+    ports:
+      - "8551"             # Auth RPC
+      - "8545:8545"       # HTTP RPC
+      - "30303"            # Execution P2P
+      - "30303:30303/udp"  # Execution P2P Discovery
+      - "8546:8546"             # Websockets RPC
+      - "6060"             # Prometheus metrics and pprof
+    
+  # geth:
+  #   image: "ethereum/client-go:v1.14.11"
+  #   command:
+  #     - --http
+  #     - --http.addr=0.0.0.0
+  #     - --http.port=8545
+  #     - --http.api=engine,eth,net,web3
+  #     - --http.vhosts="host.docker.internal,localhost,*"
+  #     - --http.corsdomain="*"
   #   ports:
   #     - "8551"             # Auth RPC
   #     - "8545:8545"       # HTTP RPC
@@ -101,22 +117,3 @@ services:
   #     - "30303:30303/udp"  # Execution P2P Discovery
   #     - "8546"             # Websockets RPC
   #     - "6060"             # Prometheus metrics and pprof
-    
-  geth:
-    image: "ethereum/client-go:v1.14.11"
-    command:
-      - --http
-      - --http.addr=0.0.0.0
-      - --http.port=8545
-      - --http.api=engine,eth,net,web3
-      - --http.vhosts="host.docker.internal,localhost,*"
-      - --http.corsdomain="*"
-    ports:
-      - "8551"             # Auth RPC
-      - "8545:8545"       # HTTP RPC
-      - "30303"            # Execution P2P
-      - "30303:30303/udp"  # Execution P2P Discovery
-      - "8546"             # Websockets RPC
-      - "6060"             # Prometheus metrics and pprof
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
