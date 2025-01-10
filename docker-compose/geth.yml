@@ -30,6 +30,11 @@ services:
       - db:database
     environment:
         ETHEREUM_JSONRPC_VARIANT: 'geth'
+        ETHEREUM_JSONRPC_HTTP_URL: http://20.81.177.198:8545/
+        ETHEREUM_JSONRPC_TRACE_URL: http://20.81.177.198:8545/
+        ETHEREUM_JSONRPC_WS_URL: ws://20.81.177.198:8546/
+        INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: "true"
+        INDEXER_DISABLE_INTERNAL_TRANSACTIONS_FETCHER: "true"
 
   visualizer:
     extends:
@@ -78,6 +83,8 @@ services:
     extends:
       file: ./services/user-ops-indexer.yml
       service: user-ops-indexer
+    environment:
+      USER_OPS_INDEXER__INDEXER__RPC_URL: ws://20.81.177.198:8546/
 
   proxy:
     depends_on:
